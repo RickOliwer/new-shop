@@ -1,86 +1,69 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import Image from 'next/image';
+import { useState } from 'react';
+import Cart from '../components/cart/Cart';
+import getProducts from '../lib/commerce/getAllProducts'
+import useCart from '../store/cart';
+import { IProductsProps } from '../types/ProductTypes'
 
-const Home: NextPage = () => {
+
+
+const Home = ({products}: IProductsProps) => {
+  console.log('my products===>', products);
+
+  const [addedToCart, setAddedToCart] = useState(false)
+  const addToCart = useCart((state: any) => state.add);
+  
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+   <main className='p-20'>
+     <div className='fixed top-0 left-0 z-30 flex justify-between w-screen px-10 py-2 bg-white '>
+      <h1>Products</h1>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+      <Cart />
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
+     </div>
 
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
-    </div>
+     <div className='grid grid-cols-4 gap-4'>
+       {products?.map((product) => {
+         return (
+           <div key={product?.id}>
+             <div className='relative h-[200px] w-[300px]'>
+               <Image 
+                layout="fill"
+                objectFit='contain'
+                src={product?.image?.mediaItemUrl}
+               />
+             </div>
+             <p>{product?.name}</p>
+             <p>dataID: {product?.databaseId}</p>
+             <p>price: {product?.price}</p>
+             {product?.price && (
+               <button onClick={() => addToCart(product)} className='px-4 py-2 duration-300 ease-in-out border cursor-pointer hover:scale-110'>add to cart</button>
+             )}
+           </div>
+         )
+       })}
+     </div>
+   </main>
   )
+}
+
+export const getStaticProps = async () => {
+  const products = await getProducts()
+
+  if(!products){
+    return {
+      notFound: true,
+    }
+  }
+
+  console.log("products ===>", products);
+  
+
+  return {
+    props: {
+      products
+    }
+  }
 }
 
 export default Home
